@@ -1,25 +1,23 @@
 package org.eclipse.draw2d.examples.diagram;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Rectangle;
 
 public class CustomDiagram {
 
-	public IFigure buildDiagram(String name, Map<String, String> ports) {
+	List<ModuleFigure> figures = new ArrayList<ModuleFigure>();
 
-		Figure diagram = new Figure();
-		diagram.setLayoutManager(new XYLayout());
+	public ModuleFigure buildDiagram(String name, Map<String, String> ports,
+			Rectangle constraint) {
 
-		Rectangle constraint = new Rectangle(10, 10, 100, 100);
-		ModuleFigure figure = new ModuleFigure(name, ports);
+		ModuleFigure figure = new ModuleFigure(name, ports, constraint);
 
-		diagram.add(figure, constraint);
+		figures.add(figure);
 
-		return diagram;
+		return figure;
 	}
 
 }

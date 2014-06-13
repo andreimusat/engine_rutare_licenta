@@ -7,6 +7,7 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -33,11 +34,26 @@ public class CustomDiagramDrawer {
 		diagram.setLayoutManager(new XYLayout());
 		canvas.setContents(diagram);
 
-		IFigure fig = cd.buildDiagram("mod", ports);
+		Rectangle constraint = new Rectangle(20, 20, 100, 100);
+
+		// System.out.println(constraint.x + " | " + constraint.y);
+		//
+		// System.out.println(constraint.getCenter().x + " | "
+		// + constraint.getCenter().y);
+		//
+		// System.out.println(constraint.getTopLeft().x + " | "
+		// + constraint.getTopLeft().y);
+		//
+		// System.out.println(constraint.getTopRight().x + " | "
+		// + constraint.getTopRight().y);
+
+		IFigure fig = cd.buildDiagram("mod", ports, constraint);
 
 		canvas.setContents(diagram);
 
-		diagram.add(fig, new Rectangle(20, 20, -1, -1));
+		diagram.add(fig, constraint);
+
+		PolylineConnection assoc = new PolylineConnection();
 
 		shell.setText("Diagrams");
 		shell.setSize(500, 200);
@@ -46,5 +62,4 @@ public class CustomDiagramDrawer {
 			while (!d.readAndDispatch())
 				d.sleep();
 	}
-
 }
