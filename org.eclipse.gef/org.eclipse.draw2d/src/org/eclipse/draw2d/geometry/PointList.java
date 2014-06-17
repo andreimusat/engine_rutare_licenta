@@ -508,4 +508,22 @@ public class PointList implements java.io.Serializable, Translatable {
 		return Geometry.polylineContainsPoint(this, x, y, tolerance);
 	}
 
+	/**
+	 * @since 3.10
+	 */
+	public boolean contains(Point p) {
+		boolean result = false;
+
+		for (int i = 0; i < 2 * size; i = i + 2) {
+			int x = points[i];
+			int y = points[i + 1];
+
+			if (p.x == x && p.y == y) {
+				result = true;
+				break;
+			}
+		}
+
+		return result;
+	}
 }
