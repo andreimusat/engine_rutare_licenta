@@ -56,7 +56,7 @@ public class ModuleFigure extends Figure {
 		int defaultPortY = (parentConstraints.height) / 2;
 
 		for (String key : ports.keySet()) {
-			Figure port = new Figure();
+			PortFigure port = new PortFigure();
 			AbstractLayout layout = new ToolbarLayout();
 			port.setLayoutManager(layout);
 			port.add(new Label(key));
@@ -67,9 +67,11 @@ public class ModuleFigure extends Figure {
 			if ("input".equals(ports.get(key))) {
 				port.setForegroundColor(INPUT);
 				portX = 0;
+				port.setDirection("input");
 			} else {
 				port.setForegroundColor(OUTPUT);
-				portX = (parentConstraints.width - (someDim.width / 2) - MAGIC_CONSTANT / 2);
+				portX = (parentConstraints.width - (someDim.width / 2) - (MAGIC_CONSTANT / 2));
+				port.setDirection("output");
 			}
 
 			Rectangle portConstraints = new Rectangle(portX, portY,

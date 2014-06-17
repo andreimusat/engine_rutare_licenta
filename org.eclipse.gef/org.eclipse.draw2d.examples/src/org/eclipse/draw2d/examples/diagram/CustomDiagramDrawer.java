@@ -40,7 +40,7 @@ public class CustomDiagramDrawer {
 		diagram.setLayoutManager(new XYLayout());
 		canvas.setContents(diagram);
 
-		Rectangle constraint = new Rectangle(400, 20, 100, 100);
+		Rectangle constraint = new Rectangle(100, 100, 100, 100);
 
 		IFigure fig = cd.buildDiagram("mod", ports, constraint);
 		figures.add(fig);
@@ -49,7 +49,7 @@ public class CustomDiagramDrawer {
 
 		diagram.add(fig, constraint);
 
-		Rectangle constraint2 = new Rectangle(400, 150, 150, 150);
+		Rectangle constraint2 = new Rectangle(400, 400, 150, 150);
 
 		IFigure fig2 = cd.buildDiagram("anotherMod", ports, constraint2);
 		figures.add(fig2);

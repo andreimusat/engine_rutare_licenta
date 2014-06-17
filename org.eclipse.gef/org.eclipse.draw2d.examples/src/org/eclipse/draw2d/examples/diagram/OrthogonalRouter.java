@@ -20,6 +20,8 @@ public class OrthogonalRouter {
 	public static final int RIGHT = 2;
 	public static final int BOTTOM = 3;
 
+	public List<Rectangle> obstacles = new ArrayList<Rectangle>();
+
 	public PointList routeConnection(IFigure source, IFigure dest,
 			Rectangle srcConstraints, Rectangle dstConstraints,
 			String srcPortName, String dstPortName) {
@@ -61,12 +63,11 @@ public class OrthogonalRouter {
 		Rectangle dstBounds = dstChildren.get(dstPort);
 
 		Point srcLocation = computeFigureLocation(srcBounds, srcConstraints,
-				srcDim);
+				srcDim, ((PortFigure) srcPort).getDirection());
 		Point dstLocation = computeFigureLocation(dstBounds, dstConstraints,
-				dstDim);
+				dstDim, ((PortFigure) dstPort).getDirection());
 
 		PointList pl = new PointList();
-		List<Rectangle> obstacles = new ArrayList<Rectangle>();
 		obstacles.add(srcConstraints);
 		obstacles.add(dstConstraints);
 		pl.addPoint(srcLocation);
@@ -75,6 +76,7 @@ public class OrthogonalRouter {
 		boolean finished = false;
 
 		while (!finished) {
+			int clear = 0;
 			for (Rectangle rectangle : obstacles) {
 				int side = NONE;
 
@@ -86,12 +88,6 @@ public class OrthogonalRouter {
 
 				if (side != NONE)
 					intersection = p1;
-
-				if (intersection == null) {
-					side = checkPointOnContour(p2, rectangle);
-					if (side != NONE)
-						intersection = p2;
-				}
 
 				if (intersection == null) {
 					intersection = intersects(p1, p2, rectangle.getTopLeft(),
@@ -106,19 +102,27 @@ public class OrthogonalRouter {
 				}
 
 				if (intersection == null) {
-					intersects(p1, p2, rectangle.getBottomRight(),
+					intersection = intersects(p1, p2,
+							rectangle.getBottomRight(),
 							rectangle.getBottomLeft());
 					side = BOTTOM;
 				}
 
 				if (intersection == null) {
-					intersects(p1, p2, rectangle.getBottomLeft(),
-							rectangle.getTopLeft());
+					intersection = intersects(p1, p2,
+							rectangle.getBottomLeft(), rectangle.getTopLeft());
 					side = LEFT;
 				}
 
+				if (intersection == null) {
+					side = NONE;
+					side = checkPointOnContour(p2, rectangle);
+					if (side != NONE)
+						intersection = p2;
+				}
+
 				if (intersection == null || intersection.equals(p2)) {
-					finished = true;
+					clear++;
 					side = NONE;
 					continue;
 				}
@@ -152,60 +156,132 @@ public class OrthogonalRouter {
 
 				switch (side) {
 				case TOP:
-					Point candidate1 = new Point(intersection.x
-							+ DEFAULT_PADDING, intersection.y - DEFAULT_PADDING);
-					Point candidate2 = new Point(intersection.x
+					/*
+					 * Point candidate1 = new Point(intersection.x +
+					 * DEFAULT_PADDING, intersection.y - DEFAULT_PADDING); Point
+					 * candidate2 = new Point(intersection.x - DEFAULT_PADDING,
+					 * intersection.y - DEFAULT_PADDING); int distance1 =
+					 * euclidianDistanceSquared(candidate1, dstLocation); int
+					 * distance2 = euclidianDistanceSquared(candidate2,
+					 * dstLocation); if (distance1 < distance2) if
+					 * (!pl.contains(candidate1)) intermediate = candidate1;
+					 * else intermediate = candidate2; else { if
+					 * (!pl.contains(candidate2)) intermediate = candidate2;
+					 * else intermediate = candidate1; }
+					 */
+					int distance1 = euclidianDistanceSquared(intersection,
+							rectangle.getTopLeft());
+					int distance2 = euclidianDistanceSquared(intersection,
+							rectangle.getTopRight());
+					Point candidate1 = new Point(rectangle.getTopLeft().x
 							- DEFAULT_PADDING, intersection.y - DEFAULT_PADDING);
-					int distance1 = euclidianDistanceSquared(candidate1,
-							dstLocation);
-					int distance2 = euclidianDistanceSquared(candidate2,
-							dstLocation);
-					if (distance1 < distance2)
+					Point candidate2 = new Point(rectangle.getTopRight().x
+							+ DEFAULT_PADDING, intersection.y - DEFAULT_PADDING);
+					if (distance1 < distance2) {
 						intermediate = candidate1;
-					else
+						if (pl.contains(intermediate))
+							intermediate = candidate2;
+					} else {
 						intermediate = candidate2;
+						if (pl.contains(intermediate))
+							intermediate = candidate1;
+					}
 					break;
 				case BOTTOM:
-					candidate1 = new Point(intersection.x + DEFAULT_PADDING,
-							intersection.y + DEFAULT_PADDING);
-					candidate2 = new Point(intersection.x - DEFAULT_PADDING,
-							intersection.y + DEFAULT_PADDING);
-					distance1 = euclidianDistanceSquared(candidate1,
-							dstLocation);
-					distance2 = euclidianDistanceSquared(candidate2,
-							dstLocation);
-					if (distance1 < distance2)
+					/*
+					 * candidate1 = new Point(intersection.x + DEFAULT_PADDING,
+					 * intersection.y + DEFAULT_PADDING); candidate2 = new
+					 * Point(intersection.x - DEFAULT_PADDING, intersection.y +
+					 * DEFAULT_PADDING); distance1 =
+					 * euclidianDistanceSquared(candidate1, dstLocation);
+					 * distance2 = euclidianDistanceSquared(candidate2,
+					 * dstLocation); if (distance1 < distance2) if
+					 * (!pl.contains(candidate1)) intermediate = candidate1;
+					 * else intermediate = candidate2; else { if
+					 * (!pl.contains(candidate2)) intermediate = candidate2;
+					 * else intermediate = candidate1; }
+					 */
+					distance1 = euclidianDistanceSquared(intersection,
+							rectangle.getBottomLeft());
+					distance2 = euclidianDistanceSquared(intersection,
+							rectangle.getBottomRight());
+					candidate1 = new Point(rectangle.getBottomLeft().x
+							- DEFAULT_PADDING, intersection.y + DEFAULT_PADDING);
+					candidate2 = new Point(rectangle.getBottomRight().x
+							+ DEFAULT_PADDING, intersection.y + DEFAULT_PADDING);
+					if (distance1 < distance2) {
 						intermediate = candidate1;
-					else
+						if (pl.contains(intermediate))
+							intermediate = candidate2;
+					} else {
 						intermediate = candidate2;
+						if (pl.contains(intermediate))
+							intermediate = candidate1;
+					}
 					break;
 				case LEFT:
+					/*
+					 * candidate1 = new Point(intersection.x - DEFAULT_PADDING,
+					 * intersection.y + DEFAULT_PADDING); candidate2 = new
+					 * Point(intersection.x - DEFAULT_PADDING, intersection.y -
+					 * DEFAULT_PADDING); distance1 =
+					 * euclidianDistanceSquared(candidate1, dstLocation);
+					 * distance2 = euclidianDistanceSquared(candidate2,
+					 * dstLocation); if (distance1 < distance2) if
+					 * (!pl.contains(candidate1)) intermediate = candidate1;
+					 * else intermediate = candidate2; else { if
+					 * (!pl.contains(candidate2)) intermediate = candidate2;
+					 * else intermediate = candidate1; }
+					 */
+					distance1 = euclidianDistanceSquared(intersection,
+							rectangle.getBottomLeft());
+					distance2 = euclidianDistanceSquared(intersection,
+							rectangle.getTopLeft());
 					candidate1 = new Point(intersection.x - DEFAULT_PADDING,
-							intersection.y + DEFAULT_PADDING);
+							rectangle.getBottomLeft().y + DEFAULT_PADDING);
 					candidate2 = new Point(intersection.x - DEFAULT_PADDING,
-							intersection.y - DEFAULT_PADDING);
-					distance1 = euclidianDistanceSquared(candidate1,
-							dstLocation);
-					distance2 = euclidianDistanceSquared(candidate2,
-							dstLocation);
-					if (distance1 < distance2)
+							rectangle.getTopLeft().y - DEFAULT_PADDING);
+					if (distance1 < distance2) {
 						intermediate = candidate1;
-					else
+						if (pl.contains(intermediate))
+							intermediate = candidate2;
+					} else {
 						intermediate = candidate2;
+						if (pl.contains(intermediate))
+							intermediate = candidate1;
+					}
 					break;
 				case RIGHT:
+					/*
+					 * candidate1 = new Point(intersection.x + DEFAULT_PADDING,
+					 * intersection.y + DEFAULT_PADDING); candidate2 = new
+					 * Point(intersection.x + DEFAULT_PADDING, intersection.y -
+					 * DEFAULT_PADDING); distance1 =
+					 * euclidianDistanceSquared(candidate1, dstLocation);
+					 * distance2 = euclidianDistanceSquared(candidate2,
+					 * dstLocation); if (distance1 < distance2) if
+					 * (!pl.contains(candidate1)) intermediate = candidate1;
+					 * else intermediate = candidate2; else { if
+					 * (!pl.contains(candidate2)) intermediate = candidate2;
+					 * else intermediate = candidate1; }
+					 */
+					distance1 = euclidianDistanceSquared(intersection,
+							rectangle.getBottomRight());
+					distance2 = euclidianDistanceSquared(intersection,
+							rectangle.getTopRight());
 					candidate1 = new Point(intersection.x + DEFAULT_PADDING,
-							intersection.y + DEFAULT_PADDING);
+							rectangle.getBottomRight().y + DEFAULT_PADDING);
 					candidate2 = new Point(intersection.x + DEFAULT_PADDING,
-							intersection.y - DEFAULT_PADDING);
-					distance1 = euclidianDistanceSquared(candidate1,
-							dstLocation);
-					distance2 = euclidianDistanceSquared(candidate2,
-							dstLocation);
-					if (distance1 < distance2)
+							rectangle.getTopRight().y - DEFAULT_PADDING);
+					if (distance1 < distance2) {
 						intermediate = candidate1;
-					else
+						if (pl.contains(intermediate))
+							intermediate = candidate2;
+					} else {
 						intermediate = candidate2;
+						if (pl.contains(intermediate))
+							intermediate = candidate1;
+					}
 					break;
 				}
 
@@ -214,10 +290,14 @@ public class OrthogonalRouter {
 				pl.addPoint(dstLocation);
 
 			}
+			if (clear == obstacles.size())
+				finished = true;
 		}
 
 		normalizePath(pl);
+		// shortenPath(pl);
 
+		obstacles.clear();
 		return pl;
 	}
 
@@ -241,7 +321,7 @@ public class OrthogonalRouter {
 			return LEFT;
 		}
 
-		if ((p1.y >= bottomRight.y) && (p1.y <= topRight.y)
+		if ((p1.y <= bottomRight.y) && (p1.y >= topRight.y)
 				&& (p1.x == bottomRight.x)) {
 			return RIGHT;
 		}
@@ -291,21 +371,87 @@ public class OrthogonalRouter {
 		path.addAll(normalized);
 	}
 
+	// public void shortenPath(PointList path) {
+	// PointList newPath = new PointList();
+	// Point first = path.getFirstPoint();
+	// Point last = path.getLastPoint();
+	// boolean finished = false;
+	// if (path.size() > 4) {
+	// int i = 0;
+	// newPath.addPoint(first);
+	// while (!finished) {
+	// boolean merged = false;
+	// Point middle = null;
+	// for (i = 1; i < path.size() - 3; i++) {
+	// Point start = path.getPoint(i);
+	// Point end = path.getPoint(i + 2);
+	// middle = mergePoints(start, end);
+	// if (isValidMerge(middle)) {
+	// newPath.addPoint(middle);
+	// merged = true;
+	// break;
+	// } else {
+	// newPath.addPoint(start);
+	// }
+	// finished = true;
+	// }
+	// if (merged) {
+	// path.removePoint(i);
+	// path.removePoint(i);
+	// path.removePoint(i);
+	// path.insertPoint(middle, i);
+	// }
+	// if (path.size() < 4)
+	// finished = true;
+	// }
+	// for (; i < path.size(); i++) {
+	// newPath.addPoint(path.getPoint(i));
+	// }
+	// newPath.addPoint(last);
+	//
+	// path.removeAllPoints();
+	// path.addAll(newPath);
+	// }
+	// }
+
+	// public Point mergePoints(Point start, Point end) {
+	// return new Point(end.x, start.y);
+	// }
+	//
+	// public boolean isValidMerge(Point p) {
+	// boolean result = true;
+	// for (Rectangle obstacle : obstacles) {
+	// if (obstacle.contains(p)) {
+	// result = false;
+	// break;
+	// }
+	// }
+	// return result;
+	// }
+
 	public boolean areContinuous(Point p1, Point p2) {
 		return ((p1.x == p2.x) || (p1.y == p2.y));
 	}
 
 	public Point computeFigureLocation(Rectangle bounds, Rectangle constraints,
-			Dimension dimension) {
+			Dimension dimension, String direction) {
 
-		int boundsX = bounds.x;
 		int boundsY = bounds.y;
 
 		int parentX = constraints.x;
 		int parentY = constraints.y;
 
-		return new Point(boundsX + parentX, parentY + boundsY
-				+ (dimension.height / 2));
+		Point result = null;
+
+		if ("input".equals(direction)) {
+			result = new Point(parentX, parentY + boundsY
+					+ (dimension.height / 2));
+		} else if ("output".equals(direction)) {
+			result = new Point(parentX + constraints.width, parentY + boundsY
+					+ (dimension.height / 2));
+		}
+
+		return result;
 	}
 
 	public double computeAngle(Point p1, Point p2) {
