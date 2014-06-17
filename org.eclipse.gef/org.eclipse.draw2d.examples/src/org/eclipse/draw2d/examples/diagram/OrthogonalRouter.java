@@ -156,19 +156,6 @@ public class OrthogonalRouter {
 
 				switch (side) {
 				case TOP:
-					/*
-					 * Point candidate1 = new Point(intersection.x +
-					 * DEFAULT_PADDING, intersection.y - DEFAULT_PADDING); Point
-					 * candidate2 = new Point(intersection.x - DEFAULT_PADDING,
-					 * intersection.y - DEFAULT_PADDING); int distance1 =
-					 * euclidianDistanceSquared(candidate1, dstLocation); int
-					 * distance2 = euclidianDistanceSquared(candidate2,
-					 * dstLocation); if (distance1 < distance2) if
-					 * (!pl.contains(candidate1)) intermediate = candidate1;
-					 * else intermediate = candidate2; else { if
-					 * (!pl.contains(candidate2)) intermediate = candidate2;
-					 * else intermediate = candidate1; }
-					 */
 					int distance1 = euclidianDistanceSquared(intersection,
 							rectangle.getTopLeft());
 					int distance2 = euclidianDistanceSquared(intersection,
@@ -188,19 +175,6 @@ public class OrthogonalRouter {
 					}
 					break;
 				case BOTTOM:
-					/*
-					 * candidate1 = new Point(intersection.x + DEFAULT_PADDING,
-					 * intersection.y + DEFAULT_PADDING); candidate2 = new
-					 * Point(intersection.x - DEFAULT_PADDING, intersection.y +
-					 * DEFAULT_PADDING); distance1 =
-					 * euclidianDistanceSquared(candidate1, dstLocation);
-					 * distance2 = euclidianDistanceSquared(candidate2,
-					 * dstLocation); if (distance1 < distance2) if
-					 * (!pl.contains(candidate1)) intermediate = candidate1;
-					 * else intermediate = candidate2; else { if
-					 * (!pl.contains(candidate2)) intermediate = candidate2;
-					 * else intermediate = candidate1; }
-					 */
 					distance1 = euclidianDistanceSquared(intersection,
 							rectangle.getBottomLeft());
 					distance2 = euclidianDistanceSquared(intersection,
@@ -220,19 +194,6 @@ public class OrthogonalRouter {
 					}
 					break;
 				case LEFT:
-					/*
-					 * candidate1 = new Point(intersection.x - DEFAULT_PADDING,
-					 * intersection.y + DEFAULT_PADDING); candidate2 = new
-					 * Point(intersection.x - DEFAULT_PADDING, intersection.y -
-					 * DEFAULT_PADDING); distance1 =
-					 * euclidianDistanceSquared(candidate1, dstLocation);
-					 * distance2 = euclidianDistanceSquared(candidate2,
-					 * dstLocation); if (distance1 < distance2) if
-					 * (!pl.contains(candidate1)) intermediate = candidate1;
-					 * else intermediate = candidate2; else { if
-					 * (!pl.contains(candidate2)) intermediate = candidate2;
-					 * else intermediate = candidate1; }
-					 */
 					distance1 = euclidianDistanceSquared(intersection,
 							rectangle.getBottomLeft());
 					distance2 = euclidianDistanceSquared(intersection,
@@ -252,19 +213,6 @@ public class OrthogonalRouter {
 					}
 					break;
 				case RIGHT:
-					/*
-					 * candidate1 = new Point(intersection.x + DEFAULT_PADDING,
-					 * intersection.y + DEFAULT_PADDING); candidate2 = new
-					 * Point(intersection.x + DEFAULT_PADDING, intersection.y -
-					 * DEFAULT_PADDING); distance1 =
-					 * euclidianDistanceSquared(candidate1, dstLocation);
-					 * distance2 = euclidianDistanceSquared(candidate2,
-					 * dstLocation); if (distance1 < distance2) if
-					 * (!pl.contains(candidate1)) intermediate = candidate1;
-					 * else intermediate = candidate2; else { if
-					 * (!pl.contains(candidate2)) intermediate = candidate2;
-					 * else intermediate = candidate1; }
-					 */
 					distance1 = euclidianDistanceSquared(intersection,
 							rectangle.getBottomRight());
 					distance2 = euclidianDistanceSquared(intersection,
@@ -295,7 +243,7 @@ public class OrthogonalRouter {
 		}
 
 		normalizePath(pl);
-		// shortenPath(pl);
+		shortenPath(pl);
 
 		obstacles.clear();
 		return pl;
@@ -371,63 +319,64 @@ public class OrthogonalRouter {
 		path.addAll(normalized);
 	}
 
-	// public void shortenPath(PointList path) {
-	// PointList newPath = new PointList();
-	// Point first = path.getFirstPoint();
-	// Point last = path.getLastPoint();
-	// boolean finished = false;
-	// if (path.size() > 4) {
-	// int i = 0;
-	// newPath.addPoint(first);
-	// while (!finished) {
-	// boolean merged = false;
-	// Point middle = null;
-	// for (i = 1; i < path.size() - 3; i++) {
-	// Point start = path.getPoint(i);
-	// Point end = path.getPoint(i + 2);
-	// middle = mergePoints(start, end);
-	// if (isValidMerge(middle)) {
-	// newPath.addPoint(middle);
-	// merged = true;
-	// break;
-	// } else {
-	// newPath.addPoint(start);
-	// }
-	// finished = true;
-	// }
-	// if (merged) {
-	// path.removePoint(i);
-	// path.removePoint(i);
-	// path.removePoint(i);
-	// path.insertPoint(middle, i);
-	// }
-	// if (path.size() < 4)
-	// finished = true;
-	// }
-	// for (; i < path.size(); i++) {
-	// newPath.addPoint(path.getPoint(i));
-	// }
-	// newPath.addPoint(last);
-	//
-	// path.removeAllPoints();
-	// path.addAll(newPath);
-	// }
-	// }
+	public void shortenPath(PointList path) {
+		PointList newPath = new PointList();
+		Point first = path.getFirstPoint();
+		Point last = path.getLastPoint();
+		boolean finished = false;
+		newPath.addPoint(first);
+		int i = 1;
+		while (!finished && (path.size() > 4)) {
+			boolean modifiedPath = false;
+			Point merged = null;
+			int index = 0;
+			for (; i < path.size() - 3; i++) {
+				Point p1 = path.getPoint(i);
+				Point p2 = path.getPoint(i + 2);
+				merged = mergePoints(p1, p2);
+				if (isValidMerge(merged, path.getPoint(i - 1))
+						&& !(path.contains(merged))) {
+					newPath.addPoint(merged);
+					index = i;
+					modifiedPath = true;
+					i += 2;
+				} else {
+					newPath.addPoint(p1);
+				}
+			}
+			if (modifiedPath == false)
+				finished = true;
+			else {
+				path.removePoint(index);
+				path.removePoint(index);
+				path.removePoint(index);
+				path.insertPoint(merged, index);
+			}
+			i = 1;
+		}
+		for (; i < path.size() - 1; i++) {
+			newPath.addPoint(path.getPoint(i));
+		}
+		newPath.addPoint(last);
+		path.removeAllPoints();
+		path.addAll(newPath);
+	}
 
-	// public Point mergePoints(Point start, Point end) {
-	// return new Point(end.x, start.y);
-	// }
-	//
-	// public boolean isValidMerge(Point p) {
-	// boolean result = true;
-	// for (Rectangle obstacle : obstacles) {
-	// if (obstacle.contains(p)) {
-	// result = false;
-	// break;
-	// }
-	// }
-	// return result;
-	// }
+	public Point mergePoints(Point start, Point end) {
+		return new Point(end.x, start.y);
+	}
+
+	public boolean isValidMerge(Point p, Point previous) {
+		boolean result = true;
+		Rectangle limit = new Rectangle(p, previous);
+		for (Rectangle obstacle : obstacles) {
+			if (obstacle.contains(p) || obstacle.intersects(limit)) {
+				result = false;
+				break;
+			}
+		}
+		return result;
+	}
 
 	public boolean areContinuous(Point p1, Point p2) {
 		return ((p1.x == p2.x) || (p1.y == p2.y));
