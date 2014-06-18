@@ -63,9 +63,55 @@ public class OrthogonalRouter {
 				srcDim, ((PortFigure) srcPort).getDirection());
 		Point dstLocation = computeFigureLocation(dstBounds, dstConstraints,
 				dstDim, ((PortFigure) dstPort).getDirection());
-		// Point srcLocation = ((PortFigure) srcPort).externalGetLocation();
-		// Point dstLocation = ((PortFigure) dstPort).externalGetLocation();
 
+		PointList pl = computePath(srcConstraints, srcLocation, dstLocation);
+
+		obstacles.clear();
+		return pl;
+	}
+
+	public PointList rerouteConnection(IFigure source, IFigure dest,
+			Rectangle srcConstraints, Rectangle dstConstraints,
+			String srcPortName, String dstPortName) {
+		if (!(source instanceof ModuleFigure)
+				|| !(dest instanceof ModuleFigure)) {
+			return null;
+		}
+
+		IFigure srcPort = null;
+		IFigure dstPort = null;
+
+		Map<IFigure, Rectangle> srcChildren = ((ModuleFigure) source).children;
+		for (IFigure fig : srcChildren.keySet()) {
+			if (fig instanceof PortFigure) {
+				if (((PortFigure) fig).getLabel().equals(srcPortName)) {
+					srcPort = fig;
+					break;
+				}
+			}
+		}
+
+		Map<IFigure, Rectangle> dstChildren = ((ModuleFigure) dest).children;
+		for (IFigure fig : dstChildren.keySet()) {
+			if (fig instanceof PortFigure) {
+				if (((PortFigure) fig).getLabel().equals(dstPortName)) {
+					dstPort = fig;
+					break;
+				}
+			}
+		}
+
+		Point srcLocation = ((PortFigure) srcPort).externalGetLocation();
+		Point dstLocation = ((PortFigure) dstPort).externalGetLocation();
+
+		PointList pl = computePath(srcConstraints, srcLocation, dstLocation);
+
+		obstacles.clear();
+		return pl;
+	}
+
+	public PointList computePath(Rectangle srcConstraints, Point srcLocation,
+			Point dstLocation) {
 		PointList pl = new PointList();
 		obstacles.add(srcConstraints);
 		for (Rectangle r : CustomDiagramDrawer.constraints) {
@@ -257,8 +303,6 @@ public class OrthogonalRouter {
 		normalizePath(pl);
 		removeExtraPoints(pl);
 		shortenPath(pl);
-
-		obstacles.clear();
 		return pl;
 	}
 

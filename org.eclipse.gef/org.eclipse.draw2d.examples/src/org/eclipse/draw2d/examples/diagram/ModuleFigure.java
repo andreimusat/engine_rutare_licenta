@@ -1,6 +1,8 @@
 package org.eclipse.draw2d.examples.diagram;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.draw2d.AbstractLayout;
@@ -12,6 +14,7 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.MouseMotionListener;
+import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.ToolbarLayout;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Dimension;
@@ -31,6 +34,7 @@ public class ModuleFigure extends Figure {
 
 	public Map<IFigure, Rectangle> children = new HashMap<IFigure, Rectangle>();
 	public Label diagramHeader = new Label();
+	public List<PolylineConnection> myConnections = new ArrayList<PolylineConnection>();
 	private static Dimension offset = new Dimension();
 
 	public ModuleFigure(String name, Map<String, String> ports,
