@@ -10,7 +10,6 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PolygonDecoration;
-import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -77,7 +76,8 @@ public class CustomDiagramDrawer {
 		// 170,
 		// 100, 275 });
 
-		PolylineConnection assoc = new PolylineConnection();
+		OrthogonalConnection assoc = new OrthogonalConnection(router, fig,
+				fig2, constraint, constraint2, "a", "a");
 		PolygonDecoration containment = new PolygonDecoration();
 		assoc.setTargetDecoration(containment);
 		assoc.setPoints(pl);
@@ -88,7 +88,8 @@ public class CustomDiagramDrawer {
 		// PointList pl2 = new PointList(
 		// new int[] { 250, 275, 280, 275, 600, 150 });
 
-		PolylineConnection assoc2 = new PolylineConnection();
+		OrthogonalConnection assoc2 = new OrthogonalConnection(router, fig,
+				fig2, constraint2, constraint, "b", "b");
 		PolygonDecoration containment2 = new PolygonDecoration();
 		assoc2.setTargetDecoration(containment2);
 		assoc2.setPoints(pl2);

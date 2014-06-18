@@ -96,11 +96,23 @@ public class ModuleFigure extends Figure {
 				offset.setWidth(event.x - getLocation().x());
 				offset.setHeight(event.y - getLocation().y());
 			}
+
+			@Override
+			public void mouseReleased(MouseEvent me) {
+				me.consume();
+				System.out.println("ZING!");
+				for (PolylineConnection conn : myConnections) {
+					if (conn instanceof OrthogonalConnection) {
+						((OrthogonalConnection) conn)
+								.setSrcConstraint(getBounds());
+						((OrthogonalConnection) conn).figureLocationChanged();
+					}
+				}
+			}
 		});
 
 		addMouseMotionListener(new MouseMotionListener.Stub() {
 			public void mouseDragged(MouseEvent event) {
-
 				Rectangle rect = getBounds().getCopy();
 				rect.setX(event.x - offset.width());
 				rect.setY(event.y - offset.height());

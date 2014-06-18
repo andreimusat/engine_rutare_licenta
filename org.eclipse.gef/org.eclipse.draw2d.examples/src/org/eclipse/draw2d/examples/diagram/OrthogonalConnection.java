@@ -1,6 +1,7 @@
 package org.eclipse.draw2d.examples.diagram;
 
 import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -14,6 +15,22 @@ public class OrthogonalConnection extends PolylineConnection {
 	private Rectangle dstConstraint;
 	private String srcPortName;
 	private String dstPortName;
+
+	public OrthogonalConnection() {
+
+	}
+
+	public OrthogonalConnection(OrthogonalRouter router, IFigure src,
+			IFigure dst, Rectangle srcConstraint, Rectangle dstConstraint,
+			String srcPortName, String dstPortname) {
+		this.router = router;
+		this.source = (Figure) src;
+		this.destination = (Figure) dst;
+		this.srcConstraint = srcConstraint;
+		this.dstConstraint = dstConstraint;
+		this.srcPortName = srcPortName;
+		this.dstPortName = dstPortname;
+	}
 
 	public void figureLocationChanged() {
 		PointList newPoints = router.rerouteConnection(source, destination,
