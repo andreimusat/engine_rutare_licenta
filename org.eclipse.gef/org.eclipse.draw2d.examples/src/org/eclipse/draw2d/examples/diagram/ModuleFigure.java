@@ -30,7 +30,7 @@ public class ModuleFigure extends Figure {
 	public static int MAGIC_CONSTANT = 20;
 
 	public Map<IFigure, Rectangle> children = new HashMap<IFigure, Rectangle>();
-
+	public Label diagramHeader = new Label();
 	private static Dimension offset = new Dimension();
 
 	public ModuleFigure(String name, Map<String, String> ports,
@@ -48,7 +48,7 @@ public class ModuleFigure extends Figure {
 		int headerY = 1;
 		Rectangle headerConstraints = new Rectangle(headerX, headerY,
 				labelDim.width, labelDim.height);
-		children.put(header, headerConstraints);
+		this.diagramHeader = header;
 		add(header, headerConstraints);
 
 		int portX = 0;
@@ -60,6 +60,7 @@ public class ModuleFigure extends Figure {
 			AbstractLayout layout = new ToolbarLayout();
 			port.setLayoutManager(layout);
 			port.add(new Label(key));
+			port.setLabel(key);
 			port.setFont(NORMAL);
 			port.setBorder(new SeparatorBorder(5, 5, 10, 5));
 			Dimension someDim = port.getPreferredSize(-1, -1);
@@ -76,6 +77,8 @@ public class ModuleFigure extends Figure {
 
 			Rectangle portConstraints = new Rectangle(portX, portY,
 					someDim.width, someDim.height);
+			port.setConstraints(portConstraints);
+			port.addMouseListeners();
 			children.put(port, portConstraints);
 			add(port, portConstraints);
 		}
@@ -98,6 +101,7 @@ public class ModuleFigure extends Figure {
 				rect.setX(event.x - offset.width());
 				rect.setY(event.y - offset.height());
 				setBounds(rect);
+				// System.out.println(getBounds().x + " | " + getBounds().y);
 				getParent().repaint();
 			}
 		});

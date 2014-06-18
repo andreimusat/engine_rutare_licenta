@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
@@ -36,23 +35,21 @@ public class OrthogonalRouter {
 
 		Map<IFigure, Rectangle> srcChildren = ((ModuleFigure) source).children;
 		for (IFigure fig : srcChildren.keySet()) {
-			for (Object element : fig.getChildren()) {
-				if (element instanceof Label)
-					if (srcPortName.equals(((Label) element).getText())) {
-						srcPort = fig;
-						break;
-					}
+			if (fig instanceof PortFigure) {
+				if (((PortFigure) fig).getLabel().equals(srcPortName)) {
+					srcPort = fig;
+					break;
+				}
 			}
 		}
 
 		Map<IFigure, Rectangle> dstChildren = ((ModuleFigure) dest).children;
 		for (IFigure fig : dstChildren.keySet()) {
-			for (Object element : fig.getChildren()) {
-				if (element instanceof Label)
-					if (srcPortName.equals(((Label) element).getText())) {
-						dstPort = fig;
-						break;
-					}
+			if (fig instanceof PortFigure) {
+				if (((PortFigure) fig).getLabel().equals(dstPortName)) {
+					dstPort = fig;
+					break;
+				}
 			}
 		}
 
@@ -66,6 +63,8 @@ public class OrthogonalRouter {
 				srcDim, ((PortFigure) srcPort).getDirection());
 		Point dstLocation = computeFigureLocation(dstBounds, dstConstraints,
 				dstDim, ((PortFigure) dstPort).getDirection());
+		// Point srcLocation = ((PortFigure) srcPort).externalGetLocation();
+		// Point dstLocation = ((PortFigure) dstPort).externalGetLocation();
 
 		PointList pl = new PointList();
 		obstacles.add(srcConstraints);
