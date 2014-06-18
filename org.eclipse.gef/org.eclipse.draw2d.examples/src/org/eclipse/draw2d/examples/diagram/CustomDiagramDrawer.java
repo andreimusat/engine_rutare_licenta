@@ -23,6 +23,7 @@ public class CustomDiagramDrawer {
 	private static Map<String, String> ports = new HashMap<String, String>();
 
 	public static List<IFigure> figures = new ArrayList<IFigure>();
+	public static List<Rectangle> constraints = new ArrayList<Rectangle>();
 
 	public static void main(String[] args) {
 		Display d = new Display();
@@ -40,19 +41,31 @@ public class CustomDiagramDrawer {
 		diagram.setLayoutManager(new XYLayout());
 		canvas.setContents(diagram);
 
-		Rectangle constraint = new Rectangle(400, 100, 100, 100);
+		Rectangle constraint3 = new Rectangle(300, 200, 100, 100);
+
+		IFigure fig3 = cd.buildDiagram("mod", ports, constraint3);
+		figures.add(fig3);
+		constraints.add(constraint3);
+
+		canvas.setContents(diagram);
+
+		diagram.add(fig3, constraint3);
+
+		Rectangle constraint = new Rectangle(500, 100, 100, 100);
 
 		IFigure fig = cd.buildDiagram("mod", ports, constraint);
 		figures.add(fig);
+		constraints.add(constraint);
 
 		canvas.setContents(diagram);
 
 		diagram.add(fig, constraint);
 
-		Rectangle constraint2 = new Rectangle(100, 100, 150, 150);
+		Rectangle constraint2 = new Rectangle(200, 400, 150, 150);
 
 		IFigure fig2 = cd.buildDiagram("anotherMod", ports, constraint2);
 		figures.add(fig2);
+		constraints.add(constraint2);
 
 		diagram.add(fig2, constraint2);
 
@@ -60,6 +73,9 @@ public class CustomDiagramDrawer {
 
 		PointList pl = router.routeConnection(fig, fig2, constraint,
 				constraint2, "a", "a");
+		// PointList pl = new PointList(new int[] { 500, 150, 470, 150, 270,
+		// 170,
+		// 100, 275 });
 
 		PolylineConnection assoc = new PolylineConnection();
 		PolygonDecoration containment = new PolygonDecoration();
@@ -69,6 +85,8 @@ public class CustomDiagramDrawer {
 
 		PointList pl2 = router.routeConnection(fig2, fig, constraint2,
 				constraint, "b", "b");
+		// PointList pl2 = new PointList(
+		// new int[] { 250, 275, 280, 275, 600, 150 });
 
 		PolylineConnection assoc2 = new PolylineConnection();
 		PolygonDecoration containment2 = new PolygonDecoration();
