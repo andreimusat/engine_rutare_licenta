@@ -73,14 +73,13 @@ public class PortFigure extends Figure {
 				rect.setX(event.x - offset.width());
 				rect.setY(event.y - offset.height());
 				setBounds(rect);
-				System.out.println(getBounds().x + " | " + getBounds().y);
 				getParent().repaint();
 			}
 		});
 	}
 
 	public Point externalGetLocation() {
-		System.out.println(getBounds().x + " | " + getBounds().y);
-		return new Point(getBounds().x, getBounds().y);
+		System.out.println("Port location: " + getBounds().x + " | " + getBounds().y);
+		return new Point(getBounds().x - 1, getBounds().y + 15);
 	}
 }

@@ -17,12 +17,9 @@ public class OrthogonalConnection extends PolylineConnection {
 	private String dstPortName;
 
 	public OrthogonalConnection() {
-
 	}
 
-	public OrthogonalConnection(OrthogonalRouter router, IFigure src,
-			IFigure dst, Rectangle srcConstraint, Rectangle dstConstraint,
-			String srcPortName, String dstPortname) {
+	public OrthogonalConnection(OrthogonalRouter router, IFigure src, IFigure dst, Rectangle srcConstraint, Rectangle dstConstraint, String srcPortName, String dstPortname) {
 		this.router = router;
 		this.source = (Figure) src;
 		this.destination = (Figure) dst;
@@ -32,9 +29,17 @@ public class OrthogonalConnection extends PolylineConnection {
 		this.dstPortName = dstPortname;
 	}
 
+	public void updateFigure(Figure fig, Rectangle constraint) {
+		if (fig.equals(source))
+			srcConstraint = constraint;
+		else if (fig.equals(destination))
+			dstConstraint = constraint;
+	}
+
 	public void figureLocationChanged() {
-		PointList newPoints = router.rerouteConnection(source, destination,
-				srcConstraint, dstConstraint, srcPortName, dstPortName);
+		updateFiguresConstraints();
+		PointList newPoints = router.rerouteConnection(source, destination, srcConstraint, dstConstraint, srcPortName, dstPortName);
+
 		setPoints(newPoints);
 	}
 
@@ -92,6 +97,11 @@ public class OrthogonalConnection extends PolylineConnection {
 
 	public void setDstPortName(String dstPortName) {
 		this.dstPortName = dstPortName;
+	}
+
+	public void updateFiguresConstraints() {
+		srcConstraint = source.getBounds();
+		dstConstraint = destination.getBounds();
 	}
 
 }

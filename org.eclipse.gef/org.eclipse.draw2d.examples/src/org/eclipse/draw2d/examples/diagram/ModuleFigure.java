@@ -37,8 +37,7 @@ public class ModuleFigure extends Figure {
 	public List<PolylineConnection> myConnections = new ArrayList<PolylineConnection>();
 	private static Dimension offset = new Dimension();
 
-	public ModuleFigure(String name, Map<String, String> ports,
-			Rectangle parentConstraints) {
+	public ModuleFigure(String name, Map<String, String> ports, Rectangle parentConstraints) {
 
 		setBorder(new LineBorder());
 		setLayoutManager(new XYLayout());
@@ -50,8 +49,7 @@ public class ModuleFigure extends Figure {
 		Dimension labelDim = header.getPreferredSize(-1, -1);
 		int headerX = (parentConstraints.width - labelDim.width) / 2;
 		int headerY = 1;
-		Rectangle headerConstraints = new Rectangle(headerX, headerY,
-				labelDim.width, labelDim.height);
+		Rectangle headerConstraints = new Rectangle(headerX, headerY, labelDim.width, labelDim.height);
 		this.diagramHeader = header;
 		add(header, headerConstraints);
 
@@ -79,8 +77,7 @@ public class ModuleFigure extends Figure {
 				port.setDirection("output");
 			}
 
-			Rectangle portConstraints = new Rectangle(portX, portY,
-					someDim.width, someDim.height);
+			Rectangle portConstraints = new Rectangle(portX, portY, someDim.width, someDim.height);
 			port.setConstraints(portConstraints);
 			port.addMouseListeners();
 			children.put(port, portConstraints);
@@ -100,11 +97,8 @@ public class ModuleFigure extends Figure {
 			@Override
 			public void mouseReleased(MouseEvent me) {
 				me.consume();
-				System.out.println("ZING!");
 				for (PolylineConnection conn : myConnections) {
 					if (conn instanceof OrthogonalConnection) {
-						((OrthogonalConnection) conn)
-								.setSrcConstraint(getBounds());
 						((OrthogonalConnection) conn).figureLocationChanged();
 					}
 				}
@@ -117,7 +111,7 @@ public class ModuleFigure extends Figure {
 				rect.setX(event.x - offset.width());
 				rect.setY(event.y - offset.height());
 				setBounds(rect);
-				// System.out.println(getBounds().x + " | " + getBounds().y);
+				System.out.println("Diagram bounds: " + getBounds().x + " | " + getBounds().y);
 				getParent().repaint();
 			}
 		});

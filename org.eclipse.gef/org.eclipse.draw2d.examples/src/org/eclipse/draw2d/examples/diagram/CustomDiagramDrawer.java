@@ -40,7 +40,7 @@ public class CustomDiagramDrawer {
 		diagram.setLayoutManager(new XYLayout());
 		canvas.setContents(diagram);
 
-		Rectangle constraint3 = new Rectangle(300, 200, 100, 100);
+		Rectangle constraint3 = new Rectangle(501, 124, 100, 100);
 
 		IFigure fig3 = cd.buildDiagram("mod", ports, constraint3);
 		figures.add(fig3);
@@ -50,7 +50,7 @@ public class CustomDiagramDrawer {
 
 		diagram.add(fig3, constraint3);
 
-		Rectangle constraint = new Rectangle(500, 100, 100, 100);
+		Rectangle constraint = new Rectangle(172, 106, 100, 100);
 
 		IFigure fig = cd.buildDiagram("mod", ports, constraint);
 		figures.add(fig);
@@ -60,7 +60,7 @@ public class CustomDiagramDrawer {
 
 		diagram.add(fig, constraint);
 
-		Rectangle constraint2 = new Rectangle(200, 400, 150, 150);
+		Rectangle constraint2 = new Rectangle(453, 359, 150, 150);
 
 		IFigure fig2 = cd.buildDiagram("anotherMod", ports, constraint2);
 		figures.add(fig2);
@@ -70,26 +70,25 @@ public class CustomDiagramDrawer {
 
 		OrthogonalRouter router = new OrthogonalRouter();
 
-		PointList pl = router.routeConnection(fig, fig2, constraint,
-				constraint2, "a", "a");
-		// PointList pl = new PointList(new int[] { 500, 150, 470, 150, 270,
-		// 170,
-		// 100, 275 });
+		PointList pl = router.routeConnection(fig, fig2, constraint, constraint2, "a", "a");
+		// PointList pl = new PointList(new int[] { 500, 150, 470, 150, 430,
+		// 170, 381, 270, 411, 375 });
 
-		OrthogonalConnection assoc = new OrthogonalConnection(router, fig,
-				fig2, constraint, constraint2, "a", "a");
+		OrthogonalConnection assoc = new OrthogonalConnection(router, fig, fig2, constraint, constraint2, "a", "a");
+		((ModuleFigure) fig).myConnections.add(assoc);
+		((ModuleFigure) fig2).myConnections.add(assoc);
 		PolygonDecoration containment = new PolygonDecoration();
 		assoc.setTargetDecoration(containment);
 		assoc.setPoints(pl);
 		diagram.add(assoc);
 
-		PointList pl2 = router.routeConnection(fig2, fig, constraint2,
-				constraint, "b", "b");
+		PointList pl2 = router.routeConnection(fig2, fig, constraint2, constraint, "b", "b");
 		// PointList pl2 = new PointList(
 		// new int[] { 250, 275, 280, 275, 600, 150 });
 
-		OrthogonalConnection assoc2 = new OrthogonalConnection(router, fig,
-				fig2, constraint2, constraint, "b", "b");
+		OrthogonalConnection assoc2 = new OrthogonalConnection(router, fig2, fig, constraint2, constraint, "b", "b");
+		((ModuleFigure) fig).myConnections.add(assoc2);
+		((ModuleFigure) fig2).myConnections.add(assoc2);
 		PolygonDecoration containment2 = new PolygonDecoration();
 		assoc2.setTargetDecoration(containment2);
 		assoc2.setPoints(pl2);
