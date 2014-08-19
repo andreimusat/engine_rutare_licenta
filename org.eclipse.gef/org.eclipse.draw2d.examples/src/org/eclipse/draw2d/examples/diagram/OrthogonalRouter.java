@@ -68,7 +68,22 @@ public class OrthogonalRouter {
 				obstacles.add(r);
 		}
 
-		PointList pl = computePath(srcConstraints, srcLocation, dstLocation);
+		Point pseudoDst = computePseudoDst(dstLocation);
+		PointList pl = computePath(srcConstraints, srcLocation, pseudoDst);
+		int diff = Math.abs(pseudoDst.x - dstLocation.x);
+		if (diff < DEFAULT_PADDING) {
+			if (dstLocation.x > pseudoDst.x) {
+				pl.removePoint(pl.size() - 1);
+				pl.addPoint(dstLocation.x - diff, dstLocation.y);
+				pl.addPoint(dstLocation);
+			} else {
+				pl.removePoint(pl.size() - 1);
+				pl.addPoint(dstLocation.x + diff, dstLocation.y);
+				pl.addPoint(dstLocation);
+			}
+		} else {
+			pl.addPoint(dstLocation);
+		}
 
 		obstacles.clear();
 		return pl;
@@ -118,7 +133,22 @@ public class OrthogonalRouter {
 				obstacles.add(fig.getBounds());
 		}
 
-		PointList pl = computePath(srcConstraints, srcLocation, dstLocation);
+		Point pseudoDst = computePseudoDst(dstLocation);
+		PointList pl = computePath(srcConstraints, srcLocation, pseudoDst);
+		int diff = Math.abs(pl.getPoint(pl.size() - 2).x - dstLocation.x);
+		if (diff < DEFAULT_PADDING) {
+			if (dstLocation.x > pseudoDst.x) {
+				pl.removePoint(pl.size() - 1);
+				pl.addPoint(dstLocation.x - diff, dstLocation.y);
+				pl.addPoint(dstLocation);
+			} else {
+				pl.removePoint(pl.size() - 1);
+				pl.addPoint(dstLocation.x + diff, dstLocation.y);
+				pl.addPoint(dstLocation);
+			}
+		} else {
+			pl.addPoint(dstLocation);
+		}
 
 		obstacles.clear();
 		return pl;
@@ -179,11 +209,8 @@ public class OrthogonalRouter {
 					intermediate = null;
 
 					topIntersection = intersects(p1, p2, rectangle.getTopLeft(), rectangle.getTopRight());
-
 					rightIntersection = intersects(p1, p2, rectangle.getTopRight(), rectangle.getBottomRight());
-
 					bottomIntersection = intersects(p1, p2, rectangle.getBottomRight(), rectangle.getBottomLeft());
-
 					leftIntersection = intersects(p1, p2, rectangle.getBottomLeft(), rectangle.getTopLeft());
 
 					intersection = getClosestIntersection(p1, topIntersection, leftIntersection, rightIntersection, bottomIntersection);
@@ -396,6 +423,24 @@ public class OrthogonalRouter {
 		return intermediate;
 	}
 
+	public Point computePseudoDst(Point dst) {
+		Point above = new Point(dst.x, dst.y - DEFAULT_PADDING);
+		Point below = new Point(dst.x, dst.y + DEFAULT_PADDING);
+		Point left = new Point(dst.x - DEFAULT_PADDING, dst.y);
+		Point right = new Point(dst.x + DEFAULT_PADDING, dst.y);
+
+		if (!dstConstraints.contains(right))
+			return right;
+		else if (!dstConstraints.contains(left))
+			return left;
+		else if (!dstConstraints.contains(below))
+			return below;
+		else if (!dstConstraints.contains(above))
+			return above;
+
+		return null;
+	}
+
 	public boolean isCollision(Point p) {
 		boolean result = false;
 		for (Rectangle obstacle : obstacles) {
@@ -461,7 +506,7 @@ public class OrthogonalRouter {
 			Point p2 = path.getPoint(i + 1);
 			if (!areContinuous(p1, p2)) {
 				Point normal = new Point(p1.x, p2.y);
-				if (isValidMerge(normal, p1) && isValidMerge(normal, p2))
+				if (isValidMerge(normal, p1))
 					normalized.addPoint(normal);
 				else
 					normalized.addPoint(p2.x, p1.y);
@@ -473,6 +518,86 @@ public class OrthogonalRouter {
 
 		path.removeAllPoints();
 		path.addAll(normalized);
+
+		checkLastSegment(path);
+	}
+
+	public void checkLastSegment(PointList path) {
+		Point penult = path.removePoint(path.size() - 2);
+		Point ult = path.removePoint(path.size() - 1);
+		Rectangle limit = new Rectangle(ult, penult);
+		for (Rectangle obstacle : obstacles) {
+			if (obstacle.equals(dstConstraints))
+				continue;
+			if (obstacle.intersects(limit)) {
+				Point topIntersection = intersects(penult, ult, obstacle.getTopLeft(), obstacle.getTopRight());
+				Point rightIntersection = intersects(penult, ult, obstacle.getTopRight(), obstacle.getBottomRight());
+				Point bottomIntersection = intersects(penult, ult, obstacle.getBottomRight(), obstacle.getBottomLeft());
+				Point leftIntersection = intersects(penult, ult, obstacle.getBottomLeft(), obstacle.getTopLeft());
+				Point intersection = getClosestIntersection(penult, topIntersection, leftIntersection, rightIntersection, bottomIntersection);
+				int side = getSideOfIntersection(intersection, topIntersection, leftIntersection, rightIntersection, bottomIntersection);
+
+				Point intermediate = null;
+				switch (side) {
+				case TOP:
+					intermediate = new Point(obstacle.getCenter().x - obstacle.width - DEFAULT_PADDING, obstacle.getCenter().x - DEFAULT_PADDING);
+					break;
+				case BOTTOM:
+					intermediate = new Point(obstacle.getCenter().x - obstacle.width - DEFAULT_PADDING, obstacle.getCenter().x + DEFAULT_PADDING);
+					break;
+				case LEFT:
+					intermediate = new Point(obstacle.getCenter().x - DEFAULT_PADDING, obstacle.getCenter().y - obstacle.height - DEFAULT_PADDING);
+					break;
+				case RIGHT:
+					intermediate = new Point(obstacle.getCenter().x + DEFAULT_PADDING, obstacle.getCenter().y - obstacle.height - DEFAULT_PADDING);
+					break;
+				}
+
+				if (intermediate != null) {
+
+					Point p1 = new Point(penult.x, intermediate.y);
+					Point p2 = new Point(intermediate.x, penult.y);
+
+					if (isValidMerge(p1, penult)) {
+
+						path.addPoint(penult);
+						path.addPoint(p1);
+						path.addPoint(intermediate);
+						path.addPoint(ult);
+
+					} else {
+
+						path.addPoint(penult);
+						path.addPoint(p2);
+						path.addPoint(intermediate);
+						path.addPoint(ult);
+
+					}
+
+					checkLastSegment(path);
+
+					return;
+				}
+			}
+		}
+
+		if (!areContinuous(penult, ult)) {
+			Point p1 = new Point(penult.x, ult.y);
+			Point p2 = new Point(ult.x, penult.y);
+
+			if (isValidMerge(p1, penult)) {
+				path.addPoint(penult);
+				path.addPoint(p1);
+				path.addPoint(ult);
+			} else {
+				path.addPoint(penult);
+				path.addPoint(p2);
+				path.addPoint(ult);
+			}
+		} else {
+			path.addPoint(penult);
+			path.addPoint(ult);
+		}
 	}
 
 	public void removeExtraPoints(PointList path) {
@@ -539,11 +664,6 @@ public class OrthogonalRouter {
 		boolean result = true;
 		Rectangle limit = new Rectangle(p, previous);
 		for (Rectangle obstacle : obstacles) {
-			if (obstacle.equals(dstConstraints) && obstacle.contains(p)) {
-				result = false;
-				break;
-			}
-
 			if (obstacle.contains(p) || obstacle.intersects(limit)) {
 				result = false;
 				break;

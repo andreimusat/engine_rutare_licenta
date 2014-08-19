@@ -34,6 +34,8 @@ public class CustomDiagramDrawer {
 
 		ports.put("a", "input");
 		ports.put("b", "output");
+		ports.put("c", "input");
+		ports.put("d", "output");
 
 		CustomDiagram cd = new CustomDiagram();
 		Figure diagram = new Figure();
@@ -71,6 +73,7 @@ public class CustomDiagramDrawer {
 		OrthogonalRouter router = new OrthogonalRouter();
 
 		PointList pl = router.routeConnection(fig, fig2, constraint, constraint2, "a", "a");
+		PointList pl3 = router.routeConnection(fig, fig2, constraint, constraint2, "c", "c");
 		// PointList pl = new PointList(new int[] { 500, 150, 470, 150, 430,
 		// 170, 381, 270, 411, 375 });
 
@@ -81,6 +84,14 @@ public class CustomDiagramDrawer {
 		assoc.setTargetDecoration(containment);
 		assoc.setPoints(pl);
 		diagram.add(assoc);
+
+		OrthogonalConnection assoc3 = new OrthogonalConnection(router, fig, fig3, constraint, constraint2, "c", "c");
+		((ModuleFigure) fig).myConnections.add(assoc3);
+		((ModuleFigure) fig3).myConnections.add(assoc3);
+		PolygonDecoration containment3 = new PolygonDecoration();
+		assoc.setTargetDecoration(containment3);
+		assoc.setPoints(pl3);
+		diagram.add(assoc3);
 
 		PointList pl2 = router.routeConnection(fig2, fig, constraint2, constraint, "b", "b");
 		// PointList pl2 = new PointList(

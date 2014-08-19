@@ -57,6 +57,10 @@ public class ModuleFigure extends Figure {
 		int portY = 0;
 		int defaultPortY = (parentConstraints.height) / 2;
 
+		int numInputs = 0;
+		int numOutputs = 0;
+		int inPortY = 0;
+		int outPortY = 0;
 		for (String key : ports.keySet()) {
 			PortFigure port = new PortFigure();
 			AbstractLayout layout = new ToolbarLayout();
@@ -66,15 +70,20 @@ public class ModuleFigure extends Figure {
 			port.setFont(NORMAL);
 			port.setBorder(new SeparatorBorder(5, 5, 10, 5));
 			Dimension someDim = port.getPreferredSize(-1, -1);
-			portY = defaultPortY - someDim.height / 2;
 			if ("input".equals(ports.get(key))) {
 				port.setForegroundColor(INPUT);
 				portX = 0;
 				port.setDirection("input");
+				inPortY = defaultPortY - someDim.height / 2 + numInputs * MAGIC_CONSTANT * 2;
+				numInputs++;
+				portY = inPortY;
 			} else {
 				port.setForegroundColor(OUTPUT);
 				portX = (parentConstraints.width - (someDim.width / 2) - (MAGIC_CONSTANT / 2));
+				outPortY = defaultPortY - someDim.height / 2 + numOutputs * MAGIC_CONSTANT * 2;
 				port.setDirection("output");
+				numOutputs++;
+				portY = outPortY;
 			}
 
 			Rectangle portConstraints = new Rectangle(portX, portY, someDim.width, someDim.height);
@@ -96,10 +105,11 @@ public class ModuleFigure extends Figure {
 
 			@Override
 			public void mouseReleased(MouseEvent me) {
-				me.consume();
 				for (PolylineConnection conn : myConnections) {
 					if (conn instanceof OrthogonalConnection) {
 						((OrthogonalConnection) conn).figureLocationChanged();
+						// ((OrthogonalConnection) conn).setTargetDecoration(new
+						// PolygonDecoration());
 					}
 				}
 			}
