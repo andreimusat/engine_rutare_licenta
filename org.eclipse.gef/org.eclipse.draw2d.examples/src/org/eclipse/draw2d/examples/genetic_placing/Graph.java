@@ -27,4 +27,12 @@ public class Graph {
 		}
 	}
 
+	public Node getNodeById(int id) {
+		for (Node node : nodes) {
+			if (node.id == id)
+				return node;
+		}
+		return null;
+	}
+
 }

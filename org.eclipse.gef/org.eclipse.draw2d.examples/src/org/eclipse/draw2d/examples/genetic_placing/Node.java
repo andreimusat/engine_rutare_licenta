@@ -3,16 +3,24 @@ package org.eclipse.draw2d.examples.genetic_placing;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.draw2d.geometry.Rectangle;
+
 public class Node {
 
 	public int id;
 	public String name;
 	public List<Integer> connectedNodes;
+	public Rectangle constraint;
+	public boolean pinned;
+	public static int DIMENSION = 50;
+	public int fitness;
 
 	public Node(int id, String name) {
 		this.id = id;
 		this.name = name;
-		connectedNodes = new ArrayList<Integer>();
+		this.connectedNodes = new ArrayList<Integer>();
+		this.pinned = false;
+		this.fitness = 0;
 	}
 
 	@Override
