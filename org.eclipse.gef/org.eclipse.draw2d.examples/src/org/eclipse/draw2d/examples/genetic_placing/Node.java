@@ -12,7 +12,7 @@ public class Node {
 	public List<Integer> connectedNodes;
 	public Rectangle constraint;
 	public boolean pinned;
-	public static int DIMENSION = 50;
+	public static int DIMENSION = 30;
 	public int fitness;
 
 	public Node(int id, String name) {

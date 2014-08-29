@@ -4,17 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
 public class NodePlacer {
 
 	public Graph graph;
 	public Node central;
+	public Rectangle restrictedZone;
 	public int width;
 	public int height;
 	public static int THERSHOLD = 20;
 	public static int NUM_ITER = 1000;
 	public static int NEGATIVE_SCORE = -100;
+	public static int ZONE_SIZE = 80;
 
 	public NodePlacer(Graph g, int displayWidth, int displayHeight) {
 		this.graph = g;
@@ -42,6 +45,8 @@ public class NodePlacer {
 		Rectangle newConstraint = new Rectangle((width - constrWidth) / 2, (height - constrHeight) / 2, constrWidth, constrHeight);
 		central.constraint = newConstraint;
 		central.pinned = true;
+
+		restrictedZone = computeRestrictedZone(central.constraint.getCenter(), ZONE_SIZE);
 	}
 
 	public void checkNodes() {
@@ -73,14 +78,20 @@ public class NodePlacer {
 		computeCentralNode();
 
 		while (counter < NUM_ITER) {
-			checkNodes();
 
 			for (Node node : graph.nodes) {
 				if (!node.pinned) {
-					node.constraint.x = new Random().nextInt(width);
-					node.constraint.y = new Random().nextInt(height);
+					if (central.connectedNodes.contains(node.id)) {
+						node.constraint.x = randIntInRange(restrictedZone.x, restrictedZone.x + restrictedZone.width);
+						node.constraint.y = randIntInRange(restrictedZone.y, restrictedZone.y + restrictedZone.height);
+					} else {
+						node.constraint.x = new Random().nextInt(width);
+						node.constraint.y = new Random().nextInt(height);
+					}
 				}
 			}
+
+			checkNodes();
 
 			if (shouldStop())
 				break;
@@ -90,6 +101,7 @@ public class NodePlacer {
 	}
 
 	public void fitness(Node current) {
+		current.fitness = 0; // reset fitness for new iteration
 		for (Node n : graph.nodes) {
 			if (!n.equals(current)) {
 				if (current.constraint.intersects(n.constraint)) {
@@ -98,8 +110,17 @@ public class NodePlacer {
 			}
 		}
 
+		if (isInRestrictedZone(current))
+			current.fitness += NEGATIVE_SCORE;
+
 		if (current.fitness >= 0)
 			current.pinned = true;
+	}
+
+	public boolean isInRestrictedZone(Node n) {
+		if (restrictedZone.intersects(n.constraint))
+			return true;
+		return false;
 	}
 
 	public boolean shouldStop() {
@@ -112,5 +133,17 @@ public class NodePlacer {
 
 	public int euclidianDistanceSquared(int x1, int x2, int y1, int y2) {
 		return (int) (Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2));
+	}
+
+	public int randIntInRange(int rangeMin, int rangeMax) {
+		Random rand = new Random();
+
+		int randomNum = rand.nextInt((rangeMax - rangeMin) + 1) + rangeMin;
+
+		return randomNum;
+	}
+
+	public Rectangle computeRestrictedZone(Point center, int length) {
+		return new Rectangle(center.x - length, center.y - length, 2 * length, 2 * length);
 	}
 }
