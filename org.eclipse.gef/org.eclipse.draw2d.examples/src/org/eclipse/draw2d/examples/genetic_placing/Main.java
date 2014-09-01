@@ -16,7 +16,7 @@ public class Main {
 	public static int HEIGHT = 600;
 
 	public static void main(String[] args) throws FileNotFoundException {
-		Graph graph = GraphReader.getInstance().readGraph("test_graph");
+		Graph graph = GraphReader.getInstance().readGraph("simple_graph");
 		graph.createInitialEdges();
 
 		Display d = new Display();

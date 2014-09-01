@@ -14,6 +14,7 @@ public class Node {
 	public boolean pinned;
 	public static int DIMENSION = 30;
 	public int fitness;
+	public int distanceToCenter;
 
 	public Node(int id, String name) {
 		this.id = id;
@@ -21,6 +22,7 @@ public class Node {
 		this.connectedNodes = new ArrayList<Integer>();
 		this.pinned = false;
 		this.fitness = 0;
+		this.distanceToCenter = Integer.MAX_VALUE;
 	}
 
 	@Override

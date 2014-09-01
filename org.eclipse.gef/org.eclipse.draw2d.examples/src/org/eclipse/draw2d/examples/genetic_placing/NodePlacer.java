@@ -45,6 +45,7 @@ public class NodePlacer {
 		Rectangle newConstraint = new Rectangle((width - constrWidth) / 2, (height - constrHeight) / 2, constrWidth, constrHeight);
 		central.constraint = newConstraint;
 		central.pinned = true;
+		central.distanceToCenter = 0;
 
 		restrictedZone = computeRestrictedZone(central.constraint.getCenter(), ZONE_SIZE);
 	}
@@ -93,8 +94,10 @@ public class NodePlacer {
 
 			checkNodes();
 
-			if (shouldStop())
+			if (shouldStop()) {
+				converge();
 				break;
+			}
 
 			counter++;
 		}
@@ -117,6 +120,33 @@ public class NodePlacer {
 			current.pinned = true;
 	}
 
+	public void converge() {
+		for (Node n : graph.nodes) {
+			if (n.id == central.id || central.connectedNodes.contains(n.id)) {
+				n.distanceToCenter = euclidianDistanceSquared(central.constraint.getCenter(), n.constraint.getCenter());
+				continue;
+			} else {
+				n.pinned = false;
+				n.distanceToCenter = euclidianDistanceSquared(central.constraint.getCenter(), n.constraint.getCenter());
+			}
+		}
+
+		while (!shouldStop()) {
+			for (Node n : graph.nodes) {
+				if (n.pinned)
+					continue;
+				Node pair = findPair(n);
+				if (euclidianDistanceSquared(n.constraint.getCenter(), pair.constraint.getCenter()) > THERSHOLD) {
+					double angle = getAngle(n, pair);
+					n.constraint.x += (int) Math.cos(angle);
+					n.constraint.y += (int) Math.sin(angle);
+				}
+			}
+
+			checkNodes();
+		}
+	}
+
 	public boolean isInRestrictedZone(Node n) {
 		if (restrictedZone.intersects(n.constraint))
 			return true;
@@ -129,6 +159,10 @@ public class NodePlacer {
 				return false;
 		}
 		return true;
+	}
+
+	public int euclidianDistanceSquared(Point p1, Point p2) {
+		return (int) (Math.pow((p1.x - p2.x), 2) + Math.pow((p1.y - p2.y), 2));
 	}
 
 	public int euclidianDistanceSquared(int x1, int x2, int y1, int y2) {
@@ -145,5 +179,26 @@ public class NodePlacer {
 
 	public Rectangle computeRestrictedZone(Point center, int length) {
 		return new Rectangle(center.x - length, center.y - length, 2 * length, 2 * length);
+	}
+
+	public Node findPair(Node n) {
+		int distance = Integer.MAX_VALUE;
+		Node result = null;
+		for (int id : n.connectedNodes) {
+			Node neigh = graph.getNodeById(id);
+			int distToNeigh = euclidianDistanceSquared(n.constraint.getCenter(), neigh.constraint.getCenter());
+			if (result == null || neigh.distanceToCenter < result.distanceToCenter || distToNeigh < distance) {
+				distance = distToNeigh;
+				result = neigh;
+			}
+		}
+
+		return result;
+	}
+
+	public double getAngle(Node n1, Node n2) {
+		int deltaY = n1.constraint.getCenter().y - n2.constraint.getCenter().y;
+		int deltaX = n1.constraint.getCenter().x - n2.constraint.getCenter().x;
+		return (Math.atan2(deltaY, deltaX) * 180) / Math.PI;
 	}
 }
