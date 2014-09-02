@@ -14,10 +14,14 @@ public class NodePlacer {
 	public Rectangle restrictedZone;
 	public int width;
 	public int height;
-	public static int THERSHOLD = 20;
+	public static int THRESHOLD = 20000;
 	public static int NUM_ITER = 1000;
 	public static int NEGATIVE_SCORE = -100;
 	public static int ZONE_SIZE = 80;
+	public static int SPEED = 20;
+	public static int INTERSECTION = 0;
+	public static int RESTRICTED = 1;
+	public static int DISTANCE = 2;
 
 	public NodePlacer(Graph g, int displayWidth, int displayHeight) {
 		this.graph = g;
@@ -86,18 +90,39 @@ public class NodePlacer {
 						node.constraint.x = randIntInRange(restrictedZone.x, restrictedZone.x + restrictedZone.width);
 						node.constraint.y = randIntInRange(restrictedZone.y, restrictedZone.y + restrictedZone.height);
 					} else {
-						node.constraint.x = new Random().nextInt(width);
-						node.constraint.y = new Random().nextInt(height);
+						Node pair = findPair(node);
+						node.pair = pair;
+						if (euclidianDistanceSquared(node.constraint.getCenter(), pair.constraint.getCenter()) > THRESHOLD) {
+							double angle = getAngle(node, pair);
+							node.constraint.getCenter().x += SPEED * Math.cos(angle * Math.PI / 180);
+							node.constraint.getCenter().y += SPEED * Math.sin(angle * Math.PI / 180);
+						}
+
+						// node intersects another one, immediately place it
+						// away from it
+						if ((node.violations & (1 << INTERSECTION)) == 1) {
+							node.constraint.x += node.constraint.width;
+							node.constraint.y += node.constraint.height;
+						}
+
+						// node is in the restricted zone, immediately move it
+						// outside
+						if ((node.violations & (1 << RESTRICTED)) == 1) {
+
+						}
+
+						if ((node.violations & (1 << DISTANCE)) == 1) {
+
+						}
+
 					}
 				}
 			}
 
 			checkNodes();
 
-			if (shouldStop()) {
-				converge();
+			if (shouldStop())
 				break;
-			}
 
 			counter++;
 		}
@@ -109,42 +134,23 @@ public class NodePlacer {
 			if (!n.equals(current)) {
 				if (current.constraint.intersects(n.constraint)) {
 					current.fitness += NEGATIVE_SCORE;
+					current.violations |= (1 << INTERSECTION);
 				}
 			}
 		}
 
-		if (isInRestrictedZone(current))
+		if (isInRestrictedZone(current) && !central.connectedNodes.contains(current.id)) {
 			current.fitness += NEGATIVE_SCORE;
+			current.violations |= (1 << RESTRICTED);
+		}
+
+		if (current.pair != null && euclidianDistanceSquared(current.constraint.getCenter(), current.pair.constraint.getCenter()) > THRESHOLD) {
+			current.fitness += NEGATIVE_SCORE;
+			current.violations |= (1 << DISTANCE);
+		}
 
 		if (current.fitness >= 0)
 			current.pinned = true;
-	}
-
-	public void converge() {
-		for (Node n : graph.nodes) {
-			if (n.id == central.id || central.connectedNodes.contains(n.id)) {
-				n.distanceToCenter = euclidianDistanceSquared(central.constraint.getCenter(), n.constraint.getCenter());
-				continue;
-			} else {
-				n.pinned = false;
-				n.distanceToCenter = euclidianDistanceSquared(central.constraint.getCenter(), n.constraint.getCenter());
-			}
-		}
-
-		while (!shouldStop()) {
-			for (Node n : graph.nodes) {
-				if (n.pinned)
-					continue;
-				Node pair = findPair(n);
-				if (euclidianDistanceSquared(n.constraint.getCenter(), pair.constraint.getCenter()) > THERSHOLD) {
-					double angle = getAngle(n, pair);
-					n.constraint.x += (int) Math.cos(angle);
-					n.constraint.y += (int) Math.sin(angle);
-				}
-			}
-
-			checkNodes();
-		}
 	}
 
 	public boolean isInRestrictedZone(Node n) {
@@ -197,8 +203,8 @@ public class NodePlacer {
 	}
 
 	public double getAngle(Node n1, Node n2) {
-		int deltaY = n1.constraint.getCenter().y - n2.constraint.getCenter().y;
-		int deltaX = n1.constraint.getCenter().x - n2.constraint.getCenter().x;
+		int deltaY = n2.constraint.getCenter().y - n1.constraint.getCenter().y;
+		int deltaX = n2.constraint.getCenter().x - n1.constraint.getCenter().x;
 		return (Math.atan2(deltaY, deltaX) * 180) / Math.PI;
 	}
 }

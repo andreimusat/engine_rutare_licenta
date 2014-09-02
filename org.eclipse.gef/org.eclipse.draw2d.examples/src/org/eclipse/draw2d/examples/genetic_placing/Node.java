@@ -15,6 +15,8 @@ public class Node {
 	public static int DIMENSION = 30;
 	public int fitness;
 	public int distanceToCenter;
+	public Node pair;
+	public byte violations;
 
 	public Node(int id, String name) {
 		this.id = id;
@@ -23,6 +25,7 @@ public class Node {
 		this.pinned = false;
 		this.fitness = 0;
 		this.distanceToCenter = Integer.MAX_VALUE;
+		this.violations = 0;
 	}
 
 	@Override
