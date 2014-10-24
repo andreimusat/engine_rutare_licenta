@@ -15,24 +15,37 @@ public class Graph {
 		this.edges = new ArrayList<Edge>();
 	}
 
-	public void createInitialEdges() {
-		for (Node n1 : nodes) {
-			for (Node n2 : nodes) {
-				if (n1.connectedNodes.contains(n2.id)) {
-					Edge e = new Edge(n1, n2);
-					if (!edges.contains(e))
-						edges.add(e);
-				}
-			}
-		}
-	}
-
 	public Node getNodeById(int id) {
 		for (Node node : nodes) {
 			if (node.id == id)
 				return node;
 		}
 		return null;
+	}
+
+	public Integer getNodeIdByName(String nodeName) {
+		for (Node node : nodes) {
+			if (node.name.equals(nodeName))
+				return node.id;
+		}
+
+		return -1;
+	}
+
+	public void setAllNeighbours() {
+		for (Node n : nodes) {
+			for (Edge e : edges) {
+				if (e.srcName.equals(n.name)) {
+					Integer nodeIdByName = getNodeIdByName(e.dstName);
+					if (!n.connectedNodes.contains(nodeIdByName))
+						n.connectedNodes.add(nodeIdByName);
+				} else if (e.dstName.equals(n.name)) {
+					Integer nodeIdByName = getNodeIdByName(e.srcName);
+					if (!n.connectedNodes.contains(nodeIdByName))
+						n.connectedNodes.add(nodeIdByName);
+				}
+			}
+		}
 	}
 
 }

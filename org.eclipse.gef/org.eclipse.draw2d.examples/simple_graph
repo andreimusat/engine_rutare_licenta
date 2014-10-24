@@ -1,25 +1,56 @@
 graph start
-    name: Simple
+    name: N
     nodes start
-        node start
-            name: a
-            id: 1
-            conn: 2
-        node end
-        node start
-            name: b
-            id: 2
-            conn: 1,3
-        node end
-        node start
-            name: c
-            id: 3
-            conn: 1,4
-        node end
-        node start
-            name: d
-            id: 4
-            conn: 3
-        node end
+        node begin
+            name: ubus_pkg.ubus_bus_monitor
+            label: ubus_bus_monitor
+        end
+        node begin
+            name: uvm_pkg.uvm_monitor
+            label: uvm_monitor
+        end
+        node begin
+            name: uvm_pkg.uvm_component
+            label: uvm_component
+        end
+        node begin
+            name: uvm_pkg.uvm_report_object
+            label: uvm_report_object
+        end
+        node begin
+            name: uvm_pkg.uvm_object
+            label: uvm_object
+        end
+        node begin
+            name: uvm_pkg.uvm_void
+            label: uvm_void
+        end
     nodes end
+    edges start
+        edge begin
+            label: 
+            src: ubus_pkg.ubus_bus_monitor
+            dst: uvm_pkg.uvm_monitor
+        edge end
+        edge begin
+            label: 
+            src: uvm_pkg.uvm_monitor
+            dst: uvm_pkg.uvm_component
+        edge end
+        edge begin
+            label: 
+            src: uvm_pkg.uvm_component
+            dst: uvm_pkg.uvm_report_object
+        edge end
+        edge begin
+            label: 
+            src: uvm_pkg.uvm_report_object
+            dst: uvm_pkg.uvm_object
+        edge end
+        edge begin
+            label: 
+            src: uvm_pkg.uvm_object
+            dst: uvm_pkg.uvm_void
+        edge end
+    edges end
 graph end

@@ -1411,4 +1411,14 @@ public class Rectangle implements Cloneable, java.io.Serializable, Translatable 
 		return y;
 	}
 
+	/**
+	 * Returns the are of the Rectangle
+	 * 
+	 * @return The current area
+	 * @since 3.10
+	 */
+	public int getArea() {
+		return width() * height();
+	}
+
 }

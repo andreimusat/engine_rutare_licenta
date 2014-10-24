@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
@@ -29,7 +31,10 @@ public class NodePlacer {
 		this.height = displayHeight;
 		for (Node n : g.nodes) {
 			Random rand = new Random();
-			n.constraint = new Rectangle(rand.nextInt(displayWidth), rand.nextInt(displayHeight), Node.DIMENSION, Node.DIMENSION);
+			Label header = new Label(n.name);
+			header.setFont(NodeFigure.BOLD);
+			Dimension labelDim = header.getPreferredSize(-1, -1);
+			n.constraint = new Rectangle(rand.nextInt(displayWidth), rand.nextInt(displayHeight), labelDim.width + Node.DIM_WIDTH, labelDim.height + Node.DIM_HEIGHT);
 		}
 		this.central = null;
 	}
@@ -71,7 +76,7 @@ public class NodePlacer {
 			fitness(current);
 			for (int nodeId : current.connectedNodes) {
 				Node candidate = graph.getNodeById(nodeId);
-				if (!toVisit.contains(candidate))
+				if (!toVisit.contains(candidate) && !visited.contains(candidate))
 					toVisit.add(candidate);
 			}
 		}
@@ -80,52 +85,102 @@ public class NodePlacer {
 
 	public void placeNodes() {
 		int counter = 0;
+		List<Integer> placedNodes = new ArrayList<Integer>();
 		computeCentralNode();
+		placedNodes.add(central.id);
+		int maxWidth = 0;
 
-		while (counter < NUM_ITER) {
-
-			for (Node node : graph.nodes) {
-				if (!node.pinned) {
-					if (central.connectedNodes.contains(node.id)) {
-						node.constraint.x = randIntInRange(restrictedZone.x, restrictedZone.x + restrictedZone.width);
-						node.constraint.y = randIntInRange(restrictedZone.y, restrictedZone.y + restrictedZone.height);
-					} else {
-						Node pair = findPair(node);
-						node.pair = pair;
-						if (euclidianDistanceSquared(node.constraint.getCenter(), pair.constraint.getCenter()) > THRESHOLD) {
-							double angle = getAngle(node, pair);
-							node.constraint.getCenter().x += SPEED * Math.cos(angle * Math.PI / 180);
-							node.constraint.getCenter().y += SPEED * Math.sin(angle * Math.PI / 180);
-						}
-
-						// node intersects another one, immediately place it
-						// away from it
-						if ((node.violations & (1 << INTERSECTION)) == 1) {
-							node.constraint.x += node.constraint.width;
-							node.constraint.y += node.constraint.height;
-						}
-
-						// node is in the restricted zone, immediately move it
-						// outside
-						if ((node.violations & (1 << RESTRICTED)) == 1) {
-
-						}
-
-						if ((node.violations & (1 << DISTANCE)) == 1) {
-
-						}
-
-					}
-				}
-			}
-
-			checkNodes();
-
-			if (shouldStop())
-				break;
-
-			counter++;
+		for (Integer i : central.connectedNodes) {
+			Node n = graph.getNodeById(i);
+			// System.out.println("===========" + n.constraint.width() +
+			// "===========");
+			// System.out.println("***********" + n.constraint.height() +
+			// "***********");
+			if (n.constraint.width() > maxWidth)
+				maxWidth = n.constraint.width();
 		}
+
+		maxWidth += 30;
+
+		// din formula L=r*PI*N/180
+		double radius = (180 * maxWidth) / (Math.PI * central.connectedNodes.size());
+
+		System.out.println(radius);
+
+		// while (counter < NUM_ITER) {
+		//
+		// for (Node node : graph.nodes) {
+		// if (!node.pinned) {
+		// if (central.connectedNodes.contains(node.id)) {
+		// node.constraint.x = randIntInRange(restrictedZone.x, restrictedZone.x
+		// + restrictedZone.width);
+		// node.constraint.y = randIntInRange(restrictedZone.y, restrictedZone.y
+		// + restrictedZone.height);
+		//
+		// for (Integer i : central.connectedNodes) {
+		// Node other = graph.getNodeById(i);
+		// if (!node.equals(other) &&
+		// node.constraint.intersects(other.constraint)) {
+		// Rectangle intersection =
+		// node.constraint.getIntersection(other.constraint);
+		// int initialArea = intersection.getArea();
+		//
+		// node.constraint.performTranslate(20, 0);
+		// intersection = node.constraint.getIntersection(other.constraint);
+		// int newArea = intersection.getArea();
+		//
+		// if (newArea < initialArea) {
+		// while (node.constraint.intersects(other.constraint)) {
+		// node.constraint.performTranslate(20, 0);
+		// }
+		// }
+		//
+		// }
+		// }
+		//
+		// } else {
+		// Node pair = findPair(node);
+		// node.pair = pair;
+		// if (euclidianDistanceSquared(node.constraint.getCenter(),
+		// pair.constraint.getCenter()) > THRESHOLD) {
+		// double angle = getAngle(node, pair);
+		// node.constraint.getCenter().x += SPEED * Math.cos(angle * Math.PI /
+		// 180);
+		// node.constraint.getCenter().y += SPEED * Math.sin(angle * Math.PI /
+		// 180);
+		// if (restrictedZone.intersects(node.constraint)) {
+		// node.constraint.getCenter().x -= SPEED * Math.cos(angle * Math.PI /
+		// 180);
+		// node.constraint.getCenter().y -= SPEED * Math.sin(angle * Math.PI /
+		// 180);
+		// node.pinned = true;
+		// }
+		// }
+		//
+		// // node intersects another one, immediately place it
+		// // away from it
+		// if ((node.violations & (1 << INTERSECTION)) == 1) {
+		// node.constraint.x += node.constraint.width;
+		// node.constraint.y += node.constraint.height;
+		// }
+		//
+		// // node is in the restricted zone, immediately move it
+		// // outside
+		// if ((node.violations & (1 << RESTRICTED)) == 1) {
+		// // do nothing for the moment
+		// }
+		//
+		// }
+		// }
+		// }
+		//
+		// checkNodes();
+		//
+		// if (shouldStop())
+		// break;
+		//
+		// counter++;
+		// }
 	}
 
 	public void fitness(Node current) {
@@ -184,7 +239,7 @@ public class NodePlacer {
 	}
 
 	public Rectangle computeRestrictedZone(Point center, int length) {
-		return new Rectangle(center.x - length, center.y - length, 2 * length, 2 * length);
+		return new Rectangle(center.x - length, center.y - length, (int) (2.5 * length), (int) (2.5 * length));
 	}
 
 	public Node findPair(Node n) {

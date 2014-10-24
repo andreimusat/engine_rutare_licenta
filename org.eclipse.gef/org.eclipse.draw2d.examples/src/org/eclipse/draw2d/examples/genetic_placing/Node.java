@@ -12,11 +12,13 @@ public class Node {
 	public List<Integer> connectedNodes;
 	public Rectangle constraint;
 	public boolean pinned;
-	public static int DIMENSION = 30;
+	public static int DIM_HEIGHT = 10;
+	public static int DIM_WIDTH = 15;
 	public int fitness;
 	public int distanceToCenter;
 	public Node pair;
 	public byte violations;
+	public String label;
 
 	public Node(int id, String name) {
 		this.id = id;
@@ -26,6 +28,11 @@ public class Node {
 		this.fitness = 0;
 		this.distanceToCenter = Integer.MAX_VALUE;
 		this.violations = 0;
+	}
+
+	public Node(int id, String name, String label) {
+		this(id, name);
+		this.label = label;
 	}
 
 	@Override

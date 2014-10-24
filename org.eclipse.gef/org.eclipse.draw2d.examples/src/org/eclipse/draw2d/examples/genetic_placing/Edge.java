@@ -5,9 +5,19 @@ public class Edge {
 	public Node start;
 	public Node end;
 
+	public String srcName;
+	public String dstName;
+	public String label;
+
 	public Edge(Node s, Node e) {
 		this.start = s;
 		this.end = e;
+	}
+
+	public Edge(String srcName, String dstName, String label) {
+		this.srcName = srcName;
+		this.dstName = dstName;
+		this.label = label;
 	}
 
 	@Override
@@ -20,6 +30,6 @@ public class Edge {
 
 	@Override
 	public String toString() {
-		return "( E: " + this.start.toString() + " -> " + this.end.toString() + " )";
+		return "( E: " + this.srcName + " -> " + this.dstName + " )";
 	}
 }
